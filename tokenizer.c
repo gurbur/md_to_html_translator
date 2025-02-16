@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 /*
  * TODO:
@@ -41,7 +42,7 @@ typedef struct {
 	block_element_type type;
 	char* value;
 	char* code_type;
-	inline_element* in_el;
+	struct inline_element* in_el;
 } block_element;
 
 typedef struct {
@@ -51,7 +52,7 @@ typedef struct {
 
 // ******************************
 
-block_element block_state = NONE;
+block_element_type block_state = NONE;
 
 
 FILE* load_markdown(char* file_dir);
@@ -60,11 +61,15 @@ void process_inline();
 
 int main(int argc, char *argv[]) {
 	if (argc != 2) {
-		fprintf(std_err, "[ERROR] Usage: %s <.md file>\n", argv[0]);
+		fprintf(stderr, "[ERROR] Usage: %s <.md file>\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 	FILE *file;
 	file = load_markdown(argv[1]);
+	
+	if (file == NULL) {
+		return EXIT_FAILURE;
+	}
 
 	char line[MAX_LINE_LENGTH];
 	while (fgets(line, sizeof(line), file)){
@@ -79,10 +84,10 @@ int main(int argc, char *argv[]) {
 // ******************************
 
 FILE* load_markdown(char* file_dir) {
-	FILE *file = fopen(dir, "r");
+	FILE *file = fopen(file_dir, "r");
 	if (!file) {
 		perror("[ERROR] Can't locate file\n");
-		return EXIT_FAILURE;
+		return NULL;
 	}
 
 	return file;
@@ -99,7 +104,7 @@ void process_block(char* line) {
 		}
 	}
 	else if (block_state == ORDERED_LIST) {
-		if (is_digit(line[0]) && strncmp(&line[1], ". ", 2) == 0) { // edge case: what if there is 2 or more digits? (ex. 13, 143, ...)
+		if (isdigit(line[0]) && strncmp(&line[1], ". ", 2) == 0) { // edge case: what if there is 2 or more digits? (ex. 13, 143, ...)
 			printf("Keep processing Ordered List(%c)...\n", line[0]);
 		}
 		else {
@@ -141,7 +146,7 @@ void process_block(char* line) {
 		printf("Line detected\n");
 		block_state = LINE;
 	}
-	else if (is_digit(line[0]) && strncmp(&line[1], ". ", 2) == 0) {
+	else if (isdigit(line[0]) && strncmp(&line[1], ". ", 2) == 0) {
 		printf("Ordered List detected\n");
 		block_state = ORDERED_LIST;
 		line = &line[3];
