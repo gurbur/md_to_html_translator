@@ -9,7 +9,7 @@
  * 0. [x] define data structures
  * 1. [x] load markdown files
  * 2. [x] send it to block tokenizer function line by line
- * 3. [ ] check if given line is block element
+ * 3. [x] check if given line is block element
  * 4. [ ] if given block element has string, send it to inline tokenizer function
  * 5. [ ] if given string has inline element, tokenize it
 */
@@ -51,13 +51,16 @@ typedef struct {
 
 // ******************************
 
+block_element block_state = NONE;
+
+
 FILE* load_markdown(char* file_dir);
-void process_block();
+void process_block(char* line);
 void process_inline();
 
 int main(int argc, char *argv[]) {
 	if (argc != 2) {
-		fprintf(std_err, "Usage: %s <.md file>\n", argv[0]);
+		fprintf(std_err, "[ERROR] Usage: %s <.md file>\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 	FILE *file;
@@ -78,7 +81,7 @@ int main(int argc, char *argv[]) {
 FILE* load_markdown(char* file_dir) {
 	FILE *file = fopen(dir, "r");
 	if (!file) {
-		perror("Can't locate file\n");
+		perror("[ERROR] Can't locate file\n");
 		return EXIT_FAILURE;
 	}
 
@@ -86,49 +89,86 @@ FILE* load_markdown(char* file_dir) {
 }
 
 void process_block(char* line) {
-	block_element_type state = NONE;
-
-	if (strncmp(line, "# ", 2) == 0) {
+	if (block_state == CODE_BLOCK) {
+		if (strncmp(line, "```", 3) == 0) {
+			printf("End of Code Block\n");
+			block_state = NONE;
+		}
+		else {
+			printf("Keep processing Code Block...\n");
+		}
+	}
+	else if (block_state == ORDERED_LIST) {
+		if (is_digit(line[0]) && strncmp(&line[1], ". ", 2) == 0) { // edge case: what if there is 2 or more digits? (ex. 13, 143, ...)
+			printf("Keep processing Ordered List(%c)...\n", line[0]);
+		}
+		else {
+			printf("End of Ordered List\n");
+			block_state == NONE;
+		}
+	}
+	else if (block_state == UNORDERED_LIST) {
+		if (strncmp(line, "- ", 2) == 0) {
+			printf("Keep processing Unordered List...\n");
+		}
+		else {
+			printf("End of Unordered List\n");
+		}
+	}
+	else if (strncmp(line, "# ", 2) == 0) {
 		printf("Heading 1 detected\n");
-		state = HEADING1;
+		block_state = HEADING1;
 		line = &line[2];
 	}
 	else if (strncmp(line, "## ", 3) == 0) {
 		printf("Heading 2 detected\n");
-		state = HEADING2;
+		block_state = HEADING2;
 		line = &line[3];
 	}
 	else if (strncmp(line, "### ", 4) == 0) {
 		printf("Heading 3 detected\n");
-		state = HEADING3;
+		block_state = HEADING3;
 		line = &line[4];
 	}
 	else if (strncmp(line, "```", 3) == 0) {
 		printf("Code Block detected\n");
-		state = CODE_BLOCK;
-		// TODO: implement code block's parsing process and others.
+		block_state = CODE_BLOCK;
+		if (line[3] != '\n') {
+			printf("Code type is %s", &line[3]);
+		}
 	}
 	else if (strncmp(line, "***\n", 4) == 0 || strncmp(line, "---\n", 4) == 0) {
 		printf("Line detected\n");
-		state = LINE;
+		block_state = LINE;
 	}
-	else if (is_digit(line[0]) && line[1] == .) {
+	else if (is_digit(line[0]) && strncmp(&line[1], ". ", 2) == 0) {
 		printf("Ordered List detected\n");
-		state = ORDERED_LIST;
+		block_state = ORDERED_LIST;
+		line = &line[3];
 	}
 	else if (strncmp(line, "- ", 2) == 0) {
 		printf("Unordered List detected\n");
-		state = UNORDERED_LIST;
+		block_state = UNORDERED_LIST;
+		line = &line[2];
+	}
+	else if (block_state == PARAGRAPH) {
+		printf("Keep processing Paragraph...\n");
 	}
 	else {
 		printf("Paragraph detected\n");
-		state = PARAGRAPH;
+		block_state = PARAGRAPH;
 	}
 	
+	if (block_state == HEADING1 || block_state == HEADING2 ||\
+		block_state == HEADING3 || block_state == ORDERED_LIST ||\
+		block_state == UNORDERED_LIST || block_state == PARAGRAPH)
+	{
+		process_inline(line);
+	}
 
 }
 
-void process_inline() {
-
+void process_inline(char* line) {
+	printf("inline processing: %s", line);
 }
 
