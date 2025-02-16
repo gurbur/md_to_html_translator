@@ -118,6 +118,7 @@ void process_block(char* line) {
 		}
 		else {
 			printf("End of Unordered List\n");
+			block_state = NONE;
 		}
 	}
 	else if (strncmp(line, "# ", 2) == 0) {
