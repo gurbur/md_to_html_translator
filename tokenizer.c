@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 /*
  * TODO:
@@ -94,6 +95,7 @@ FILE* load_markdown(char* file_dir) {
 }
 
 void process_block(char* line) {
+	bool skip_flag = false;
 	if (block_state == CODE_BLOCK) {
 		if (strncmp(line, "```", 3) == 0) {
 			printf("End of Code Block\n");
@@ -101,25 +103,33 @@ void process_block(char* line) {
 		}
 		else {
 			printf("Keep processing Code Block...\n");
+			skip_flag = true;
 		}
 	}
 	else if (block_state == ORDERED_LIST) {
 		if (isdigit(line[0]) && strncmp(&line[1], ". ", 2) == 0) { // edge case: what if there is 2 or more digits? (ex. 13, 143, ...)
 			printf("Keep processing Ordered List(%c)...\n", line[0]);
+			skip_flag = true;
+			line = &line[3];
 		}
 		else {
 			printf("End of Ordered List\n");
-			block_state == NONE;
+			block_state = NONE;
 		}
 	}
 	else if (block_state == UNORDERED_LIST) {
 		if (strncmp(line, "- ", 2) == 0) {
 			printf("Keep processing Unordered List...\n");
+			skip_flag = true;
+			line = &line[2];
 		}
 		else {
 			printf("End of Unordered List\n");
 			block_state = NONE;
 		}
+	}
+	if (skip_flag) {
+		// do_nothing();
 	}
 	else if (strncmp(line, "# ", 2) == 0) {
 		printf("Heading 1 detected\n");
