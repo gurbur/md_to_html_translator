@@ -100,6 +100,7 @@ void process_block(char* line) {
 		if (strncmp(line, "```", 3) == 0) {
 			printf("End of Code Block\n");
 			block_state = NONE;
+			skip_flag = true;
 		}
 		else {
 			printf("Keep processing Code Block...\n");
