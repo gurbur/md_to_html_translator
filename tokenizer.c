@@ -1,4 +1,5 @@
 #define MAX_LINE_LENGTH 2048
+#define MAX_INLINE_BUFFER 100
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,12 +13,12 @@
  * 1. [x] load markdown files
  * 2. [x] send it to block tokenizer function line by line
  * 3. [x] check if given line is block element
- * 4. [ ] if given block element has string, send it to inline tokenizer function
- * 5. [ ] if given string has inline element, tokenize it
+ * 4. [x] if given block element has string, send it to inline tokenizer function
+ * 5. [x] if given string has inline element, tokenize it
 */
 
 typedef enum {
-	NONE = 0,
+	NONE_BLOCK = 0,
 	HEADING1,
 	HEADING2,
 	HEADING3,
@@ -29,12 +30,15 @@ typedef enum {
 } block_element_type;
 
 typedef enum {
-	NORMAL_STRING = 0,
+	NONE_INLINE = 0,
+	NORMAL_STRING,
 	ITALIC,
 	BOLD,
 	ITALIC_AND_BOLD,
 	INLINE_CODE,
 	LINK,
+	LINK_SHOWN,
+	LINK_HIDDEN,
 	IMAGE_LINK
 
 } inline_element_type;
@@ -53,7 +57,7 @@ typedef struct {
 
 // ******************************
 
-block_element_type block_state = NONE;
+block_element_type block_state = NONE_BLOCK;
 
 
 FILE* load_markdown(char* file_dir);
@@ -99,7 +103,7 @@ void process_block(char* line) {
 	if (block_state == CODE_BLOCK) {
 		if (strncmp(line, "```", 3) == 0) {
 			printf("End of Code Block\n");
-			block_state = NONE;
+			block_state = NONE_BLOCK;
 			skip_flag = true;
 		}
 		else {
@@ -115,7 +119,7 @@ void process_block(char* line) {
 		}
 		else {
 			printf("End of Ordered List\n");
-			block_state = NONE;
+			block_state = NONE_BLOCK;
 		}
 	}
 	else if (block_state == UNORDERED_LIST) {
@@ -126,7 +130,7 @@ void process_block(char* line) {
 		}
 		else {
 			printf("End of Unordered List\n");
-			block_state = NONE;
+			block_state = NONE_BLOCK;
 		}
 	}
 	if (skip_flag) {
@@ -186,6 +190,167 @@ void process_block(char* line) {
 }
 
 void process_inline(char* line) {
+	inline_element_type inline_state = NONE_INLINE;
 	printf("inline processing: %s", line);
-}
+	int i = 0;
+	char buffer[MAX_INLINE_BUFFER];
 
+	while(line[i] != '\0') {
+		bool skip_flag = false;
+		if (inline_state == ITALIC) {
+			if (line[i] == '*') {
+				printf("\nEnd of Italic\n");
+				inline_state = NONE_INLINE;
+				i += 1;
+			}
+			else {
+				printf("%c", line[i]);
+				i += 1;
+				skip_flag = true;
+			}
+		}
+		else if (inline_state == BOLD) {
+			if (line[i] == '*' && line[i + 1] == '*') {
+				printf("\nEnd of Bold\n");
+				inline_state = NONE_INLINE;
+				i += 2;
+			}
+			else {
+				printf("%c", line[i]);
+				i += 1;
+				skip_flag = true;
+			}
+		}
+		else if (inline_state == ITALIC_AND_BOLD) {
+			if (line[i] == '*' && line[i + 1] == '*' && line[i + 2] == '*') {
+				printf("\nEnd of Italic and Bold\n");
+				inline_state = NONE_INLINE;
+				i += 3;
+			}
+			else {
+				printf("%c", line[i]);
+				i += 1;
+				skip_flag = true;
+			}
+		}
+		else if (inline_state == INLINE_CODE) {
+			if (line[i] == '`') {
+				printf("\nEnd of Inline Code\n");
+				inline_state = NONE_INLINE;
+				i += 1;
+			}
+			else {
+				printf("%c", line[i]);
+				i += 1;
+				skip_flag = true;
+			}
+		}
+		else if (inline_state == IMAGE_LINK) {
+			if (line[i] == ']' && line[i + 1] == ']') {
+				printf("\nEnd of Image Link\n");
+				inline_state = NONE_INLINE;
+				i += 2;
+			}
+			else {
+				printf("%c", line[i]);
+				i += 1;
+				skip_flag = true;
+			}
+		}
+		else if (inline_state == LINK) {
+			if (line[i] == ']' && line[i + 1] == ']') {
+				printf("\nEnd of Link\n");
+				inline_state = NONE_INLINE;
+				i == 2;
+			}
+			else {
+				printf("%c", line[i]);
+				i += 1;
+				skip_flag = true;
+			}
+		}
+		else if (inline_state == LINK_SHOWN) {
+			if (line[i] == ']' && line[i + 1] == '(') {
+				printf("\nEnd of Showing Link\nHidden Link: ");
+				inline_state = LINK_HIDDEN;
+				i += 2;
+				skip_flag = true;
+			}
+			else {
+				printf("%c", line[i]);
+				i += 1;
+				skip_flag = true;
+			}
+		}
+		else if (inline_state == LINK_HIDDEN) {
+			if (line[i] == ')') {
+				printf("\nEnd of Hidden Link\n");
+				inline_state = NONE_INLINE;
+				i += 1;
+			}
+			else {
+				printf("%c", line[i]);
+				i += 1;
+				skip_flag = true;
+			}
+		}
+
+		if (skip_flag) {
+			//do_nothing();
+		}
+		else if (line[i] == '\0') {
+			break;
+		}
+		else if (line[i] == '*' && line[i + 1] == '*' && line[i + 2] == '*') {
+			printf("\nItalic and Bold Detected: ");
+			inline_state = ITALIC_AND_BOLD;
+			i += 3; // skip ***
+		}
+		else if (line[i] == '*' && line[i + 1] == '*') {
+			printf("\nBold Detected: ");
+			inline_state = BOLD;
+			i += 2;
+		}
+		else if (line[i] == '*') {
+			printf("\nItalic Detected: ");
+			inline_state = ITALIC;
+			i += 1;
+		}
+		else if (line[i] == '`') {
+			printf("\nInline Code Detected: ");
+			inline_state = INLINE_CODE;
+			i += 1;
+		}
+		else if (line[i] == '!' && line[i] == '[' && line[i] == '[') {
+			printf("\nImage Link Detected.\n");
+			inline_state = IMAGE_LINK;
+			i += 3;
+		}
+		else if (line[i] == '[' && line[i + 1] == '[') {
+			printf("\nLink Detected: ");
+			inline_state = LINK;
+			i += 2;
+		}
+		else if (line[i] == '[') {
+			printf("\nHidden/Shown Link Detected.\n");
+			inline_state = LINK_SHOWN;
+			i += 1;
+		}
+		else if (line[i] == '\\') {
+			printf("\nEscape Character Detected: %c", line[i + 1]);
+			inline_state = NORMAL_STRING;
+			i += 2;
+		}
+		else if (inline_state == NORMAL_STRING) {
+			printf("%c", line[i]);
+			i += 1;
+		}
+		else {
+			printf("\nNormal String Detected: ");
+			printf("%c", line[i]);
+			inline_state = NORMAL_STRING;
+			i += 1;
+		}
+	}
+	printf("\nEnd of Line.\n");
+}
