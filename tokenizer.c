@@ -191,7 +191,7 @@ void process_block(char* line) {
 
 void process_inline(char* line) {
 	inline_element_type inline_state = NONE_INLINE;
-	printf("inline processing: %s", line);
+	//printf("inline processing: %s", line);
 	int i = 0;
 	char buffer[MAX_INLINE_BUFFER];
 
@@ -199,7 +199,8 @@ void process_inline(char* line) {
 		bool skip_flag = false;
 		if (inline_state == ITALIC) {
 			if (line[i] == '*') {
-				printf("\nEnd of Italic\n");
+				//printf("\nEnd of Italic\n");
+				printf("\n");
 				inline_state = NONE_INLINE;
 				i += 1;
 			}
@@ -211,7 +212,8 @@ void process_inline(char* line) {
 		}
 		else if (inline_state == BOLD) {
 			if (line[i] == '*' && line[i + 1] == '*') {
-				printf("\nEnd of Bold\n");
+				//printf("\nEnd of Bold\n");
+				printf("\n");
 				inline_state = NONE_INLINE;
 				i += 2;
 			}
@@ -223,7 +225,8 @@ void process_inline(char* line) {
 		}
 		else if (inline_state == ITALIC_AND_BOLD) {
 			if (line[i] == '*' && line[i + 1] == '*' && line[i + 2] == '*') {
-				printf("\nEnd of Italic and Bold\n");
+				//printf("\nEnd of Italic and Bold\n");
+				printf("\n");
 				inline_state = NONE_INLINE;
 				i += 3;
 			}
@@ -235,7 +238,8 @@ void process_inline(char* line) {
 		}
 		else if (inline_state == INLINE_CODE) {
 			if (line[i] == '`') {
-				printf("\nEnd of Inline Code\n");
+				//printf("\nEnd of Inline Code\n");
+				printf("\n");
 				inline_state = NONE_INLINE;
 				i += 1;
 			}
@@ -247,7 +251,8 @@ void process_inline(char* line) {
 		}
 		else if (inline_state == IMAGE_LINK) {
 			if (line[i] == ']' && line[i + 1] == ']') {
-				printf("\nEnd of Image Link\n");
+				//printf("\nEnd of Image Link\n");
+				printf("\n");
 				inline_state = NONE_INLINE;
 				i += 2;
 			}
@@ -259,7 +264,8 @@ void process_inline(char* line) {
 		}
 		else if (inline_state == LINK) {
 			if (line[i] == ']' && line[i + 1] == ']') {
-				printf("\nEnd of Link\n");
+				//printf("\nEnd of Link\n");
+				printf("\n");
 				inline_state = NONE_INLINE;
 				i == 2;
 			}
@@ -271,7 +277,8 @@ void process_inline(char* line) {
 		}
 		else if (inline_state == LINK_SHOWN) {
 			if (line[i] == ']' && line[i + 1] == '(') {
-				printf("\nEnd of Showing Link\nHidden Link: ");
+				//printf("\nEnd of Showing Link\nHidden Link: ");
+				printf("\nHidden Link: ");
 				inline_state = LINK_HIDDEN;
 				i += 2;
 				skip_flag = true;
@@ -284,7 +291,8 @@ void process_inline(char* line) {
 		}
 		else if (inline_state == LINK_HIDDEN) {
 			if (line[i] == ')') {
-				printf("\nEnd of Hidden Link\n");
+				//printf("\nEnd of Hidden Link\n");
+				printf("\n");
 				inline_state = NONE_INLINE;
 				i += 1;
 			}
@@ -298,46 +306,49 @@ void process_inline(char* line) {
 		if (skip_flag) {
 			//do_nothing();
 		}
+		else if (line[i] == '\n') {
+			i += 1;
+		}
 		else if (line[i] == '\0') {
 			break;
 		}
 		else if (line[i] == '*' && line[i + 1] == '*' && line[i + 2] == '*') {
-			printf("\nItalic and Bold Detected: ");
+			printf("	Italic and Bold Detected: ");
 			inline_state = ITALIC_AND_BOLD;
 			i += 3; // skip ***
 		}
 		else if (line[i] == '*' && line[i + 1] == '*') {
-			printf("\nBold Detected: ");
+			printf("	Bold Detected: ");
 			inline_state = BOLD;
 			i += 2;
 		}
 		else if (line[i] == '*') {
-			printf("\nItalic Detected: ");
+			printf("	Italic Detected: ");
 			inline_state = ITALIC;
 			i += 1;
 		}
 		else if (line[i] == '`') {
-			printf("\nInline Code Detected: ");
+			printf("\n	Inline Code Detected: ");
 			inline_state = INLINE_CODE;
 			i += 1;
 		}
 		else if (line[i] == '!' && line[i] == '[' && line[i] == '[') {
-			printf("\nImage Link Detected.\n");
+			printf("\n	Image Link Detected.\n");
 			inline_state = IMAGE_LINK;
 			i += 3;
 		}
 		else if (line[i] == '[' && line[i + 1] == '[') {
-			printf("\nLink Detected: ");
+			printf("\n	Link Detected: ");
 			inline_state = LINK;
 			i += 2;
 		}
 		else if (line[i] == '[') {
-			printf("\nHidden/Shown Link Detected.\n");
+			printf("\n	Hidden/Shown Link Detected.\n");
 			inline_state = LINK_SHOWN;
 			i += 1;
 		}
 		else if (line[i] == '\\') {
-			printf("\nEscape Character Detected: %c", line[i + 1]);
+			printf("\n	Escape Character Detected: %c", line[i + 1]);
 			inline_state = NORMAL_STRING;
 			i += 2;
 		}
@@ -346,11 +357,12 @@ void process_inline(char* line) {
 			i += 1;
 		}
 		else {
-			printf("\nNormal String Detected: ");
+			printf("	Normal String Detected: ");
 			printf("%c", line[i]);
 			inline_state = NORMAL_STRING;
 			i += 1;
 		}
 	}
-	printf("\nEnd of Line.\n");
+	//printf("End of Line.\n");
+	printf("\n");
 }
