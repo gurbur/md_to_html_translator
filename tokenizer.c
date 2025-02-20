@@ -225,6 +225,10 @@ void process_block(char* line, FILE* output) {
 	}
 	else if (block_state == PARAGRAPH) {
 		//printf("Keep processing Paragraph...\n");
+		//fprintf(output, "[DEBUG] Paragraph: %s", line);
+		if (line[0] == '\n') {
+			block_state = NONE_BLOCK;
+		}
 	}
 	else {
 		//printf("Paragraph detected\n");
