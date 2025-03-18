@@ -1,5 +1,6 @@
 
 
+// -------------------- Tokenizer Types --------------------
 
 typedef enum {
 	NONE_BLOCK = 0,
@@ -38,6 +39,8 @@ typedef struct {
 	char* value;
 } inline_element;
 
+// -------------------- Parser Types --------------------
+
 typedef enum {
 	NODE_DOCUMENT = 0,
 	NODE_HEADING1,
@@ -65,5 +68,7 @@ typedef struct {
 	struct ASTNode* child;
 
 } ast_node;
+
+// -------------------- HTML Generator --------------------
 
 
