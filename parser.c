@@ -54,6 +54,9 @@ typedef struct {
 	char* value;
 } inline_element;
 
+
+
+
 int main(int argc, char *argv[]) {
 	if (argc < 2) {
 		fprintf(stderr, "[ERROR] Usage: %s <.tokens file> [-o <output file name>]\n", argv[0]);
@@ -86,7 +89,7 @@ int main(int argc, char *argv[]) {
 
 	char line[MAX_LINE_LENGTH];
 	while (fgets(line, sizeof(line), input)){
-		process_block(line, output);
+		parse_line(line);
 	}
 	
 	fclose(input);
@@ -113,6 +116,5 @@ FILE* load_file(char* file_dir, char* mode) {
 
 	return file;
 }
-
 
 
