@@ -16,7 +16,7 @@
  * 3. [x] check if given line is block element
  * 4. [x] if given block element has string, send it to inline tokenizer function
  * 5. [x] if given string has inline element, tokenize it
- * 6. [ ] print the output into specific file format
+ * 6. [x] print the output into specific file format
 */
 
 typedef enum {
