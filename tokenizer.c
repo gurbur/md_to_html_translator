@@ -46,13 +46,16 @@ int main(int argc, char *argv[]) {
 	input = load_file(input_dir, "r");
 	
 	if (input == NULL) {
+		fclose(input);
 		return EXIT_FAILURE;
 	}
 
 	FILE *output;
 	output = load_file(output_dir, "w");
 	
-	if (input == NULL) {
+	if (output == NULL) {
+		fclose(input);
+		fclose(output);
 		return EXIT_FAILURE;
 	}
 
@@ -74,11 +77,11 @@ FILE* load_file(char* file_dir, char* mode) {
 	FILE *file = fopen(file_dir, mode);
 	if (!file) {
 		if (mode[0] == 'r') {
-			perror("[ERROR] Can't locate file\n");
+			perror("[ERROR] Can't locate file");
 			return NULL;
 		}
 		else if (mode[0] == 'w') {
-			perror("[ERROR] Can't create output file\n");
+			perror("[ERROR] Can't create output file");
 			return NULL;
 		}
 	}
