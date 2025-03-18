@@ -38,3 +38,32 @@ typedef struct {
 	char* value;
 } inline_element;
 
+typedef enum {
+	NODE_DOCUMENT = 0,
+	NODE_HEADING1,
+	NODE_HEADING2,
+	NODE_HEADING3,
+	NODE_CODE_BLOCK,
+	NODE_LINE,
+	NODE_ORDERED_LIST,
+	NODE_UNORDERED_LIST,
+	NODE_PARAGRAPH,
+	NODE_IMAGE_LINK,
+	NONE_INLINE,
+	NODE_NORMAL_STRING,
+	NODE_ITALIC,
+	NODE_BOLD,
+	NODE_ITALIC_AND_BOLD,
+	NODE_INLINE_CODE,
+	NODE_LINK,
+	NODE_LINK_SHOWN,
+	NODE_LINK_HIDDEN
+} ast_node_types;
+
+typedef struct {
+	struct ASTNode* sibling;
+	struct ASTNode* child;
+
+} ast_node;
+
+
