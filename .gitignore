@@ -3,5 +3,7 @@
 !*.h
 !README.md
 !.gitignore
+
 test/*
+!test/
 !test/*.md
