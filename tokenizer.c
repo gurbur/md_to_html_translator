@@ -91,7 +91,7 @@ FILE* load_file(char* file_dir, char* mode) {
 
 void process_block(char* line, FILE* output) {
 	bool skip_flag = false;
-	int num = -1;
+	int num = -1, offset = 0;
 	if (block_state == CODE_BLOCK) {
 		if (strncmp(line, "```", 3) == 0) {
 			//printf("End of Code Block\n");
@@ -106,11 +106,11 @@ void process_block(char* line, FILE* output) {
 		}
 	}
 	else if (block_state == ORDERED_LIST) {
-		if (sscanf(line, "%d. ", &num) == 1) { // edge case: what if there is 2 or more digits? (ex. 13, 143, ...) -> handled on Mar.19, 2025
+		if (sscanf(line, "%d.%n", &num, &offset) == 1 && line[offset] == ' ' && isalnum(line[offset + 1])) { // edge case: what if there is 2 or more digits? (ex. 13, 143, ...) -> handled on Mar.19, 2025
 			//printf("Keep processing Ordered List(%c)...\n", line[0]);
-			fprintf(output, "\tNUM\n\t\t%c\n", line[0]);
+			fprintf(output, "ORDERED_LIST\n\tNUM\n\t\t%c\n", line[0]);
 			skip_flag = true;
-			line = &line[3];
+			line += offset + 1;
 		}
 		else {
 			//printf("End of Ordered List\n");
@@ -166,11 +166,11 @@ void process_block(char* line, FILE* output) {
 		fprintf(output, "LINE\n");
 		block_state = LINE;
 	}
-	else if (sscanf(line, "%d. ", &num) == 1) {
-		//printf("Ordered List detected\n");
+	else if (sscanf(line, "%d.%n", &num, &offset) == 1 && line[offset] == ' ' && isalnum(line[offset + 1])) {
 		fprintf(output, "ORDERED_LIST\n\tNUM\n\t\t%c\n", line[0]);
 		block_state = ORDERED_LIST;
-		line = &line[3];
+		line += offset + 1;
+		//printf("Ordered List detected\n");
 	}
 	else if (strncmp(line, "- ", 2) == 0) {
 		//printf("Unordered List detected\n");
