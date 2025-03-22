@@ -288,7 +288,7 @@ void process_inline(char* line, FILE* output) {
 				//printf("\n");
 				fprintf(output, "\n");
 				inline_state = NONE_INLINE;
-				i == 2;
+				i += 2;
 			}
 			else {
 				//printf("%c", line[i]);
