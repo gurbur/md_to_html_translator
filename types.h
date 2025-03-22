@@ -1,4 +1,4 @@
-
+#include "list_head.h"
 
 // -------------------- Tokenizer Types --------------------
 
@@ -50,23 +50,23 @@ typedef enum {
 	NODE_LINE,
 	NODE_ORDERED_LIST,
 	NODE_UNORDERED_LIST,
+	NODE_LIST_ITEM,
 	NODE_PARAGRAPH,
 	NODE_IMAGE_LINK,
-	NODE_INLINE,
-	NODE_NORMAL_STRING,
-	NODE_ITALIC,
-	NODE_BOLD,
-	NODE_ITALIC_AND_BOLD,
+	NODE_NORMAL_TEXT,
+	NODE_ITALIC_TEXT,
+	NODE_BOLD_TEXT,
+	NODE_ITALIC_AND_BOLD_TEXT,
 	NODE_INLINE_CODE,
 	NODE_LINK,
-	NODE_LINK_SHOWN,
-	NODE_LINK_HIDDEN
 } ast_node_types;
 
 typedef struct {
-	struct ASTNode* sibling;
-	struct ASTNode* child;
-
+	struct list_head sibling;
+	struct list_head child;
+	ast_node_types type;
+	char* data1;
+	char* data2;
 } ast_node;
 
 // -------------------- HTML Generator --------------------

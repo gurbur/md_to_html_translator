@@ -3,6 +3,7 @@
 #define _LINUX_LIST_H
 
 #include <stdbool.h>
+#include <stdio.h>
 
 /**
  * container_of - cast a member of a structure out to the containing structure
